@@ -1,6 +1,9 @@
+import os
+import pickle
+from datetime import datetime
+
 import py2neo
 
-import os, pickle
 from groupme import GroupMe
 
 LAST_MESSAGE_FILE = "settings/last_message.pkl"
@@ -21,6 +24,8 @@ class Neo4jConnector:
             self.graph.run(cypher="create constraint on (u:User) assert u.id IS UNIQUE")
             self.graph.run(cypher="create constraint on (m:Message) assert m.id IS UNIQUE")
         except py2neo.database.ClientError:
+            pass
+        except ConnectionRefusedError:
             pass
 
     def update_user_nodes(self, groupme: GroupMe):
@@ -54,9 +59,9 @@ class Neo4jConnector:
                 self.graph.run(cypher=query)
                 new_last_message = max(new_last_message, int(message["id"]))
             before_id = int(messages[-1]["id"])
-            # if int(messages[-1]["id"]) < self.last_message:
-            #     break
-            print('.', end='')
+            if int(messages[-1]["id"]) < self.last_message:
+                break
+            print('.', end='', flush=True)
             messages = groupme.get_messages(before_id=before_id)
         print(flush=True)
 
@@ -68,6 +73,25 @@ class Neo4jConnector:
         q = """
         match (m:Message)
         match (u:User) where m.sender_id =~ u.user_id
+        unwind m.favorited_by as f
+        match (u2:User) where u2.user_id =~ f
+        merge (m)-[:FAVORITED_BY]->(u2)
         merge (m)-[:SENT_BY]->(u)
         """
+
         self.graph.run(cypher=q)
+
+    def get_all_users(self) -> dict:
+        output = {}
+        q = f'match (n:User) return n.user_id, n.name, n.image_url order by n.name'
+        result = self.graph.run(cypher=q)
+        for user in result.data():
+            user_id, name, avatar = user.values()
+            output[int(user_id)] = (name, avatar)
+        return output
+
+    def get_user_by_id(self, user_id:int) -> dict:
+        q = f'match (n:User) where n.user_id =~ "{user_id}" return n'
+        result = self.graph.run(cypher=q)
+        user = result.evaluate()
+        return user

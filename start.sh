@@ -21,11 +21,13 @@ RESULT=$?
 
 if [ $RESULT -gt 0 ]
 then
-    sh "./setup_docker.sh"
+    sh "setup-docker.sh"
 else
     docker start $CONTAINER_NAME
 fi
 
+echo "Waiting for Docker to fully start..."
+sleep 5
 flask run 
 
 trap "trap_ctrlc" 2

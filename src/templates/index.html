@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+
+<body>
+
+  <h1>GroupMe Analyser</h1>
+
+  <div>
+    {% for user_id, value in users.items() %}
+    <p><a href="/user/{{user_id}}">{{ value[0] }}</a></p>
+    {% endfor %}
+  </div>
+</body>
+
+</html>

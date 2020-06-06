@@ -2,7 +2,7 @@
 
 import os, pprint
 
-from flask import Flask
+from flask import Flask, render_template
 
 from groupme import GroupMe
 from graph import DRUMLINE_GC, Neo4jConnector
@@ -15,12 +15,16 @@ gm.set_group(DRUMLINE_GC)
 neo4j = Neo4jConnector("localhost", "7687", "neo4j", "groupme")
 neo4j.update_user_nodes(gm)
 neo4j.update_messages_nodes(gm)
+neo4j.make_relationships()
 
 @app.route("/")
-def hello_world():
-    groups = gm.get_groups_index()
-    drumline_2019 = None
-    for group in groups:
-        if int(group["id"]) == DRUMLINE_GC:
-            pprint.pprint(group["members"])
+def index():
+    user_dict = neo4j.get_all_users()
+    return render_template('index.html', users=user_dict)
+
+@app.route("/user/<int:userID>")
+def user(userID):
     return gm.get_latest_message()
+
+if __name__ == "__main__":
+    app.run()
