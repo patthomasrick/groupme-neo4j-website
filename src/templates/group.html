@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block header %}
+{% block title %}Group - {{ group["name"] }}{% endblock %}
+{% endblock %}
+
+{% block content %}
+<div class="columns">
+  <div class="column is-half">
+    <h2 class="title">
+      Recent Messages
+    </h2>
+
+    {% for message in messages %}
+    <article class="media">
+      <figure class="media-left">
+        <p class="image is-64x64">
+          {% if message['avatar_url'] != None %}
+          <img src="{{ message['avatar_url'] }}">
+          {% endif %}
+        </p>
+      </figure>
+      <div class="media-content">
+        <div class="content">
+          <p>
+            <a href="/group/{{ group['id'] }}/user/{{ message['user_id'] }}"><strong>{{ message['name'] }}</strong></a>
+            <small>{{ message['created_at']|datetime }}</small>
+            <br>
+            {{ message['text'] }}
+          </p>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  <div class="column is-half">
+    <h2 class="title">
+      Users
+    </h2>
+
+    <div class="columns">
+      <div class="column">
+        {% for member in members[::2] %}
+        <a href="/group/{{ group['id'] }}/user/{{ member['user_id'] }}">
+          <div class="card">
+            <div class="card-image">
+              <figure class="image is-1by1">
+                {% if member['image_url'] != None %}
+                <img src="{{ member['image_url'] }}">
+                {% endif %}
+              </figure>
+            </div>
+            <div class="card-content">
+              <div class="content">
+                <strong>{{ member['name'] }}</strong>
+              </div>
+            </div>
+          </div>
+        </a>
+        </br>
+        {% endfor %}
+      </div>
+
+      <div class="column">
+        {% for member in members[1::2] %}
+        <a href="/group/{{ group['id'] }}/user/{{ member['user_id'] }}">
+          <div class="card">
+            <div class="card-image">
+              <figure class="image is-1by1">
+                {% if member['image_url'] != None %}
+                <img src="{{ member['image_url'] }}">
+                {% endif %}
+              </figure>
+            </div>
+            <div class="card-content">
+              <div class="content">
+                <strong>{{ member['name'] }}</strong>
+              </div>
+            </div>
+          </div>
+        </a>
+        </br>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,15 +1,28 @@
-<!doctype html>
-<html>
+{% extends 'base.html' %}
 
-<body>
+{% block header %}
+{% block title %}Groups{% endblock %}
+{% endblock %}
 
-  <h1>GroupMe Analyser</h1>
-
-  <div>
-    {% for user_id, value in users.items() %}
-    <p><a href="/user/{{user_id}}">{{ value[0] }}</a></p>
-    {% endfor %}
+{% block content %}
+{% for group in groups %}
+<article class="media">
+  <figure class="media-left">
+    <p class="image is-128x128">
+      {% if group['image_url'] != None %}
+      <img src="{{ group['image_url'] }}">
+      {% endif %}
+    </p>
+  </figure>
+  <div class="media-content">
+    <div class="content">
+      <p>
+        <a href="/group/{{ group['id'] }}"><strong>{{ group['name'] }}</strong></a> <small>{{ group['type'] }}</small>
+        <br>
+        {{ group['description'] }}
+      </p>
+    </div>
   </div>
-</body>
-
-</html>
+</article>
+{% endfor %}
+{% endblock %}

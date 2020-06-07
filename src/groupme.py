@@ -23,7 +23,13 @@ class GroupMe:
 
         while True:
             get = requests.get(
-                url=url, params={"token": self.__api_token, "page": page},
+                url=url,
+                params={
+                    "token": self.__api_token,
+                    "page": page,
+                    "per_page": 25,
+                    "omit": "memberships",
+                },
             )
             if get.status_code != 200:
                 break
@@ -34,9 +40,17 @@ class GroupMe:
             page += 1
         return groups
 
-    def get_latest_message(self):
+    def get_group_info(self, group_id: int) -> list:
+        url = f"{GROUPME_API_BASE_URL}/groups/{group_id}"
+        get = requests.get(url=url, params={"token": self.__api_token},)
+        if get.status_code != 200:
+            return None
+        response = json.loads(get.text)
+        return response["response"]
+
+    def get_latest_message(self, groupID: int):
         get = requests.get(
-            url=f"{GROUPME_API_BASE_URL}/groups/{self.__group_id}/messages",
+            url=f"{GROUPME_API_BASE_URL}/groups/{groupID}/messages",
             params={"token": self.__api_token, "limit": 1},
         )
         if get.status_code == 200:
@@ -45,7 +59,7 @@ class GroupMe:
         else:
             return None
 
-    def get_messages(self, limit: int = 100, before_id: int = None):
+    def get_messages(self, groupID: int, limit: int = 100, before_id: int = None):
         params = {}
         if before_id is None:
             params = {"token": self.__api_token, "limit": limit}
@@ -53,8 +67,7 @@ class GroupMe:
             params = {"token": self.__api_token, "limit": limit, "before_id": before_id}
 
         get = requests.get(
-            url=f"{GROUPME_API_BASE_URL}/groups/{self.__group_id}/messages",
-            params=params,
+            url=f"{GROUPME_API_BASE_URL}/groups/{groupID}/messages", params=params,
         )
         if get.status_code == 200:
             response = json.loads(get.text)
